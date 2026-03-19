@@ -106,3 +106,25 @@ Inspired by [LMGTFY](https://lmgtfy.app/), which has been teaching people to Goo
 ---
 
 *For when "just ask ChatGPT" is too polite.*
+
+---
+
+## Appendix: How This Was Built
+
+### The Original Prompt
+
+> Create a new repo in work called LMAITFU. It's going to be a public repo. And it's going to be a static website. And it's going to be modeled after LMGTFU. The famous site that just animates asking Google a query. This animates asking AI query and presents what AI returns. Technically this relies on the website being able to access open AI or Claude itself. Write this up in a read me. Set it up as a Google pages repo. Add commit push.
+
+### What Happened Next
+
+From that single voice-transcribed prompt, an AI assistant built the initial site in about 10 minutes: a dark-themed chat UI with typing animations, support for OpenAI and Anthropic APIs, and a shareable link system that encodes questions in the URL.
+
+The first version required users to provide their own API keys. This was deemed "unacceptable for a toy app" — the whole point is frictionless passive-aggression. So began the hunt for a free, keyless AI backend.
+
+**HuggingFace** was the first attempt, but their free inference API had been deprecated. **Groq** has a generous free tier but still requires signup. Finally, **Pollinations.ai** was discovered — completely free, no API key, no signup. It can be slow (10-30 seconds sometimes), but it works.
+
+Along the way: a test suite was added (`node test.js`), the provider selection screen was removed for viewers (just show them the answer!), and GitHub Pages deployment was configured via Actions workflow after debugging some token permission issues.
+
+The result: a static site where you type a question, get a link, and anyone who clicks it watches an AI answer the question they should have just asked themselves.
+
+Total development time: ~90 minutes of human-AI conversation.
