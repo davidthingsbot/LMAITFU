@@ -14,6 +14,20 @@
             <h1>🤖 LMAITFU</h1>
             <p class="subtitle">Let Me AI That For You</p>
             
+            <div class="question-section">
+                <label for="question">The question they should have asked AI:</label>
+                <textarea id="question" rows="3" placeholder="How do I center a div in CSS?"></textarea>
+            </div>
+            
+            <button id="generate-btn" class="primary-btn">Generate Link</button>
+            
+            <div id="link-result" class="link-result hidden">
+                <p>Share this link:</p>
+                <input type="text" id="generated-link" readonly>
+                <button id="copy-btn">📋 Copy</button>
+                <p class="hint">They'll watch the AI answer their question for them.</p>
+            </div>
+            
             <div class="api-key-section">
                 <label for="api-provider">AI Provider:</label>
                 <select id="api-provider">
@@ -27,20 +41,6 @@
                     <input type="password" id="api-key" placeholder="hf_... or sk-...">
                     <p class="hint" id="key-hint">Hugging Face works without a key (rate-limited). Add one for higher limits.</p>
                 </div>
-            </div>
-            
-            <div class="question-section">
-                <label for="question">The question they should have asked AI:</label>
-                <textarea id="question" rows="3" placeholder="How do I center a div in CSS?"></textarea>
-            </div>
-            
-            <button id="generate-btn" class="primary-btn">Generate Link</button>
-            
-            <div id="link-result" class="link-result hidden">
-                <p>Share this link:</p>
-                <input type="text" id="generated-link" readonly>
-                <button id="copy-btn">📋 Copy</button>
-                <p class="hint">They'll watch the AI answer their question for them.</p>
             </div>
         </div>
 
