@@ -173,8 +173,8 @@
             currentQuery = 'What is the meaning of life?';
         }
 
-        // Show provider selection
-        providerSelectMode.classList.remove('hidden');
+        // Skip provider selection - use free AI by default
+        playAnimation(currentQuery, 'pollinations', '');
     }
 
     async function playAnimation(query, provider, key) {
