@@ -206,15 +206,23 @@
             <div class="typing-indicator">
                 <span></span><span></span><span></span>
             </div>
+            <div class="typing-hint" style="font-size:0.8rem;color:#666;margin-top:8px;">AI is thinking...</div>
         `;
         chatMessages.appendChild(typingDiv);
         scrollToBottom();
+        
+        // Update hint after a few seconds if still loading
+        const slowHintTimeout = setTimeout(() => {
+            const hint = typingDiv.querySelector('.typing-hint');
+            if (hint) hint.textContent = 'Still working... free AI can be slow';
+        }, 5000);
         
         // Make actual API call
         try {
             const response = await callAI(query, provider, key);
             
-            // Remove typing indicator
+            // Clear slow hint timeout and remove typing indicator
+            clearTimeout(slowHintTimeout);
             typingDiv.remove();
             
             // Show response
@@ -226,6 +234,7 @@
             showProviderInfo(provider);
             
         } catch (error) {
+            clearTimeout(slowHintTimeout);
             typingDiv.remove();
             addMessage(`Error: ${error.message}`, 'assistant');
             
@@ -280,18 +289,37 @@
 
     async function callPollinations(query) {
         // Pollinations.ai - free AI text generation, no API key needed
-        const systemPrompt = 'You are a helpful assistant. Give concise, direct answers. Keep responses under 200 words unless the question requires more detail.';
-        const fullPrompt = `${systemPrompt}\n\nUser: ${query}`;
-        const encodedPrompt = encodeURIComponent(fullPrompt);
+        // Note: Can be slow (10-30s) and has rate limits
+        const encodedQuery = encodeURIComponent(query);
         
-        const response = await fetch(`https://text.pollinations.ai/${encodedPrompt}`);
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+        
+        try {
+            const response = await fetch(`https://text.pollinations.ai/${encodedQuery}`, {
+                signal: controller.signal
+            });
 
-        if (!response.ok) {
-            throw new Error(`API error (${response.status})`);
+            clearTimeout(timeoutId);
+
+            if (response.status === 429) {
+                throw new Error('Rate limited - please wait a moment and try again');
+            }
+
+            if (!response.ok) {
+                throw new Error(`API error (${response.status})`);
+            }
+
+            const text = await response.text();
+            return text.trim();
+        } catch (e) {
+            clearTimeout(timeoutId);
+            if (e.name === 'AbortError') {
+                throw new Error('Request timed out - the free AI is slow today, please try again');
+            }
+            throw e;
         }
-
-        const text = await response.text();
-        return text.trim();
     }
 
     async function callOpenAI(query, key) {
