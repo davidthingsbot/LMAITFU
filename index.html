@@ -31,15 +31,15 @@
             <div class="api-key-section">
                 <label for="api-provider">AI Provider:</label>
                 <select id="api-provider">
-                    <option value="groq">⚡ Groq (Free & Fast)</option>
+                    <option value="pollinations">✨ Free AI (no key needed)</option>
                     <option value="openai">OpenAI (GPT-4)</option>
                     <option value="anthropic">Anthropic (Claude)</option>
                 </select>
                 
-                <div id="api-key-group">
+                <div id="api-key-group" style="display:none;">
                     <label for="api-key">API Key <span id="key-optional"></span>:</label>
-                    <input type="password" id="api-key" placeholder="gsk_... or sk-...">
-                    <p class="hint" id="key-hint">Free API key: <a href="https://console.groq.com/keys" target="_blank" style="color:#6c63ff">Get one here</a> (takes 30 seconds)</p>
+                    <input type="password" id="api-key" placeholder="sk-...">
+                    <p class="hint" id="key-hint">Stored locally in your browser.</p>
                 </div>
             </div>
         </div>
@@ -79,15 +79,15 @@
             
             <div class="provider-options">
                 <button id="use-free-btn" class="provider-btn free">
-                    <span class="provider-icon">⚡</span>
-                    <span class="provider-label">Groq (Free)</span>
-                    <span class="provider-desc">Get free key in 30 sec</span>
+                    <span class="provider-icon">✨</span>
+                    <span class="provider-label">Show Me!</span>
+                    <span class="provider-desc">Free, no signup needed</span>
                 </button>
                 
                 <button id="use-own-key-btn" class="provider-btn">
                     <span class="provider-icon">🔑</span>
                     <span class="provider-label">Use My Own Key</span>
-                    <span class="provider-desc">OpenAI, Anthropic, or Groq</span>
+                    <span class="provider-desc">OpenAI or Anthropic</span>
                 </button>
             </div>
             
@@ -101,7 +101,6 @@
             <div class="api-key-section">
                 <label for="viewer-provider">AI Provider:</label>
                 <select id="viewer-provider">
-                    <option value="groq">Groq (Free)</option>
                     <option value="openai">OpenAI</option>
                     <option value="anthropic">Anthropic</option>
                 </select>

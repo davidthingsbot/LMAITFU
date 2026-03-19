@@ -20,9 +20,9 @@ The passive-aggressive way to tell someone: *"You know you could have just asked
 This is a static site that runs entirely in the browser. When viewing a shared link:
 
 1. Choose an AI provider:
-   - **⚡ Groq (Free)** — Free API key, takes 30 seconds to get. Super fast (Llama 3.1)
-   - **OpenAI** — Requires your own API key
-   - **Anthropic** — Requires your own API key
+   - **✨ Free AI** — No API key needed! Just works. (Powered by Pollinations.ai)
+   - **OpenAI** — Use your own API key for GPT-4
+   - **Anthropic** — Use your own API key for Claude
 
 2. Watch the animation play while the real API call happens
 3. See the actual AI response
@@ -46,7 +46,7 @@ This is a static site that runs entirely in the browser. When viewing a shared l
 ### Viewing a Link
 
 1. Open the shared link
-2. Get a free Groq API key (30 seconds, no credit card) or use your own OpenAI/Anthropic key
+2. Click "Show Me!" (or use your own OpenAI/Anthropic key)
 3. Watch the animation
 4. See the AI's answer
 5. Feel appropriately chastised

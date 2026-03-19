@@ -6,13 +6,10 @@
 
     // Provider configurations
     const PROVIDERS = {
-        groq: {
-            name: 'Groq',
-            displayName: '⚡ Groq (Free & Fast)',
-            requiresKey: true,
-            keyPrefix: 'gsk_',
-            model: 'llama-3.1-8b-instant',
-            signupUrl: 'https://console.groq.com/keys'
+        pollinations: {
+            name: 'AI',
+            displayName: '✨ Free AI',
+            requiresKey: false
         },
         openai: {
             name: 'ChatGPT',
@@ -60,7 +57,7 @@
     const backToFreeBtn = document.getElementById('back-to-free-btn');
 
     // Load saved settings
-    const savedProvider = localStorage.getItem('lmaitfu_provider') || 'groq';
+    const savedProvider = localStorage.getItem('lmaitfu_provider') || 'pollinations';
     const savedKey = localStorage.getItem('lmaitfu_key');
     apiProvider.value = savedProvider;
     if (savedKey) apiKey.value = savedKey;
@@ -90,20 +87,9 @@
     copyBtn.addEventListener('click', copyLink);
     
     useFreeBtn.addEventListener('click', () => {
-        // Show key entry with Groq pre-selected and signup link
+        // Use free Pollinations API - no key needed!
         hideAllModes();
-        viewerProvider.value = 'groq';
-        keyEntryMode.classList.remove('hidden');
-        // Add signup link prompt
-        const existingPrompt = keyEntryMode.querySelector('.signup-prompt');
-        if (!existingPrompt) {
-            const prompt = document.createElement('p');
-            prompt.className = 'signup-prompt';
-            prompt.innerHTML = '👉 <a href="https://console.groq.com/keys" target="_blank" style="color:#4ade80">Get your free Groq API key</a> (30 seconds, no credit card)';
-            prompt.style.textAlign = 'center';
-            prompt.style.marginBottom = '1rem';
-            keyEntryMode.querySelector('.api-key-section').insertBefore(prompt, keyEntryMode.querySelector('.api-key-section').firstChild);
-        }
+        playAnimation(currentQuery, 'pollinations', '');
     });
     
     useOwnKeyBtn.addEventListener('click', () => {
@@ -131,12 +117,12 @@
 
     function updateKeyUI() {
         const provider = PROVIDERS[apiProvider.value];
-        if (provider.signupUrl) {
-            keyHint.innerHTML = `Free API key: <a href="${provider.signupUrl}" target="_blank" style="color:#6c63ff">Get one here</a> (takes 30 seconds)`;
+        if (!provider.requiresKey) {
+            apiKeyGroup.style.display = 'none';
         } else {
+            apiKeyGroup.style.display = 'block';
             keyHint.textContent = 'Stored locally in your browser. Never sent anywhere except the AI provider.';
         }
-        keyOptional.style.display = 'none';
     }
 
     function hideAllModes() {
@@ -281,8 +267,8 @@
 
     async function callAI(query, provider, key) {
         switch (provider) {
-            case 'groq':
-                return callGroq(query, key);
+            case 'pollinations':
+                return callPollinations(query);
             case 'openai':
                 return callOpenAI(query, key);
             case 'anthropic':
@@ -292,39 +278,20 @@
         }
     }
 
-    async function callGroq(query, key) {
-        const model = PROVIDERS.groq.model;
+    async function callPollinations(query) {
+        // Pollinations.ai - free AI text generation, no API key needed
+        const systemPrompt = 'You are a helpful assistant. Give concise, direct answers. Keep responses under 200 words unless the question requires more detail.';
+        const fullPrompt = `${systemPrompt}\n\nUser: ${query}`;
+        const encodedPrompt = encodeURIComponent(fullPrompt);
         
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`
-            },
-            body: JSON.stringify({
-                model: model,
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a helpful assistant. Give concise, direct answers. Keep responses under 200 words unless the question requires more detail.'
-                    },
-                    {
-                        role: 'user',
-                        content: query
-                    }
-                ],
-                max_tokens: 500,
-                temperature: 0.7
-            })
-        });
+        const response = await fetch(`https://text.pollinations.ai/${encodedPrompt}`);
 
         if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.error?.message || `Groq API error (${response.status})`);
+            throw new Error(`API error (${response.status})`);
         }
 
-        const data = await response.json();
-        return data.choices[0].message.content.trim();
+        const text = await response.text();
+        return text.trim();
     }
 
     async function callOpenAI(query, key) {
