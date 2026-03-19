@@ -257,7 +257,14 @@
     function addMessage(text, role) {
         const div = document.createElement('div');
         div.className = `message ${role}`;
-        div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+        
+        // Render markdown for assistant messages, escape for user messages
+        if (role === 'assistant' && typeof marked !== 'undefined') {
+            div.innerHTML = `<div class="bubble markdown-body">${marked.parse(text)}</div>`;
+        } else {
+            div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+        }
+        
         chatMessages.appendChild(div);
         scrollToBottom();
     }
