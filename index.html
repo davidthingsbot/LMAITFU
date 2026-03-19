@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMAITFU - Let Me AI That For You</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- Setup Mode (entering question) -->
+        <div id="setup-mode" class="mode">
+            <h1>🤖 LMAITFU</h1>
+            <p class="subtitle">Let Me AI That For You</p>
+            
+            <div class="api-key-section">
+                <label for="api-provider">AI Provider:</label>
+                <select id="api-provider">
+                    <option value="openai">OpenAI (GPT-4)</option>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                </select>
+                
+                <label for="api-key">Your API Key:</label>
+                <input type="password" id="api-key" placeholder="sk-... or sk-ant-...">
+                <p class="hint">Stored locally in your browser. Never sent anywhere except the AI provider.</p>
+            </div>
+            
+            <div class="question-section">
+                <label for="question">The question they should have asked AI:</label>
+                <textarea id="question" rows="3" placeholder="How do I center a div in CSS?"></textarea>
+            </div>
+            
+            <button id="generate-btn" class="primary-btn">Generate Link</button>
+            
+            <div id="link-result" class="link-result hidden">
+                <p>Share this link:</p>
+                <input type="text" id="generated-link" readonly>
+                <button id="copy-btn">📋 Copy</button>
+                <p class="hint">They'll watch the AI answer their question for them.</p>
+            </div>
+        </div>
+
+        <!-- Animation Mode (showing the passive-aggressive magic) -->
+        <div id="animation-mode" class="mode hidden">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <span class="provider-name">AI Assistant</span>
+                    <span class="status-dot"></span>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Messages will be inserted here -->
+                </div>
+                
+                <div class="chat-input-area">
+                    <div class="chat-input" id="chat-input"></div>
+                    <button class="send-btn" id="send-btn">➤</button>
+                </div>
+            </div>
+            
+            <div id="snark-message" class="snark-message hidden">
+                <p>Was that so hard? 🙄</p>
+                <a href="/" class="create-own">Create your own</a>
+            </div>
+        </div>
+
+        <!-- API Key Required (for viewers without a key) -->
+        <div id="key-required-mode" class="mode hidden">
+            <h2>🔑 API Key Required</h2>
+            <p>To see the AI's response, you'll need to provide your own API key.</p>
+            
+            <div class="api-key-section">
+                <label for="viewer-provider">AI Provider:</label>
+                <select id="viewer-provider">
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                </select>
+                
+                <label for="viewer-key">Your API Key:</label>
+                <input type="password" id="viewer-key" placeholder="sk-...">
+            </div>
+            
+            <button id="viewer-continue-btn" class="primary-btn">Show Me The Answer</button>
+            
+            <p class="hint">Or just... ask AI yourself next time? 😏</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <a href="https://github.com/davidthingsbot/LMAITFU">GitHub</a> · 
+            Inspired by <a href="https://lmgtfy.app/">LMGTFY</a> · 
+            For when "just ask ChatGPT" is too polite.
+        </p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
