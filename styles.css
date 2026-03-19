@@ -390,6 +390,19 @@ input:focus, textarea:focus, select:focus {
     text-decoration: underline;
 }
 
+.provider-info {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.provider-info.hidden {
+    display: none;
+}
+
 /* Key Entry Mode */
 #key-entry-mode {
     text-align: center;

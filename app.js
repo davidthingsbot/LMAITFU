@@ -6,13 +6,13 @@
 
     // Provider configurations
     const PROVIDERS = {
-        huggingface: {
-            name: 'Hugging Face',
-            displayName: '🤗 Hugging Face',
-            requiresKey: false,
-            keyPrefix: 'hf_',
-            // Using Mistral-7B-Instruct via HF Inference API
-            model: 'mistralai/Mistral-7B-Instruct-v0.2'
+        groq: {
+            name: 'Groq',
+            displayName: '⚡ Groq (Free & Fast)',
+            requiresKey: true,
+            keyPrefix: 'gsk_',
+            model: 'llama-3.1-8b-instant',
+            signupUrl: 'https://console.groq.com/keys'
         },
         openai: {
             name: 'ChatGPT',
@@ -60,7 +60,7 @@
     const backToFreeBtn = document.getElementById('back-to-free-btn');
 
     // Load saved settings
-    const savedProvider = localStorage.getItem('lmaitfu_provider') || 'huggingface';
+    const savedProvider = localStorage.getItem('lmaitfu_provider') || 'groq';
     const savedKey = localStorage.getItem('lmaitfu_key');
     apiProvider.value = savedProvider;
     if (savedKey) apiKey.value = savedKey;
@@ -90,8 +90,20 @@
     copyBtn.addEventListener('click', copyLink);
     
     useFreeBtn.addEventListener('click', () => {
+        // Show key entry with Groq pre-selected and signup link
         hideAllModes();
-        playAnimation(currentQuery, 'huggingface', '');
+        viewerProvider.value = 'groq';
+        keyEntryMode.classList.remove('hidden');
+        // Add signup link prompt
+        const existingPrompt = keyEntryMode.querySelector('.signup-prompt');
+        if (!existingPrompt) {
+            const prompt = document.createElement('p');
+            prompt.className = 'signup-prompt';
+            prompt.innerHTML = '👉 <a href="https://console.groq.com/keys" target="_blank" style="color:#4ade80">Get your free Groq API key</a> (30 seconds, no credit card)';
+            prompt.style.textAlign = 'center';
+            prompt.style.marginBottom = '1rem';
+            keyEntryMode.querySelector('.api-key-section').insertBefore(prompt, keyEntryMode.querySelector('.api-key-section').firstChild);
+        }
     });
     
     useOwnKeyBtn.addEventListener('click', () => {
@@ -119,13 +131,12 @@
 
     function updateKeyUI() {
         const provider = PROVIDERS[apiProvider.value];
-        if (provider.requiresKey) {
-            keyOptional.style.display = 'none';
-            keyHint.textContent = 'Stored locally in your browser. Never sent anywhere except the AI provider.';
+        if (provider.signupUrl) {
+            keyHint.innerHTML = `Free API key: <a href="${provider.signupUrl}" target="_blank" style="color:#6c63ff">Get one here</a> (takes 30 seconds)`;
         } else {
-            keyOptional.style.display = 'inline';
-            keyHint.textContent = 'Hugging Face works without a key (rate-limited). Add one for higher limits.';
+            keyHint.textContent = 'Stored locally in your browser. Never sent anywhere except the AI provider.';
         }
+        keyOptional.style.display = 'none';
     }
 
     function hideAllModes() {
@@ -223,9 +234,10 @@
             // Show response
             addMessage(response, 'assistant');
             
-            // Show snark
+            // Show snark and provider info
             await sleep(1000);
             snarkMessage.classList.remove('hidden');
+            showProviderInfo(provider);
             
         } catch (error) {
             typingDiv.remove();
@@ -235,7 +247,16 @@
             await sleep(1000);
             snarkMessage.querySelector('p').textContent = 'Well, that didn\'t work. But you get the idea. 😅';
             snarkMessage.classList.remove('hidden');
+            showProviderInfo(provider);
         }
+    }
+
+    function showProviderInfo(provider) {
+        const providerInfo = document.getElementById('animation-provider-info');
+        const providerNameSpan = document.getElementById('current-provider-name');
+        const providerConfig = PROVIDERS[provider];
+        providerNameSpan.textContent = providerConfig.displayName || providerConfig.name;
+        providerInfo.classList.remove('hidden');
     }
 
     function addMessage(text, role) {
@@ -260,8 +281,8 @@
 
     async function callAI(query, provider, key) {
         switch (provider) {
-            case 'huggingface':
-                return callHuggingFace(query, key);
+            case 'groq':
+                return callGroq(query, key);
             case 'openai':
                 return callOpenAI(query, key);
             case 'anthropic':
@@ -271,48 +292,39 @@
         }
     }
 
-    async function callHuggingFace(query, key) {
-        const model = PROVIDERS.huggingface.model;
-        const headers = {
-            'Content-Type': 'application/json'
-        };
+    async function callGroq(query, key) {
+        const model = PROVIDERS.groq.model;
         
-        // Add auth header if key provided
-        if (key) {
-            headers['Authorization'] = `Bearer ${key}`;
-        }
-
-        const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${key}`
+            },
             body: JSON.stringify({
-                inputs: `<s>[INST] You are a helpful assistant. Give concise, direct answers. Keep responses under 200 words unless the question requires more detail.
-
-${query} [/INST]`,
-                parameters: {
-                    max_new_tokens: 500,
-                    temperature: 0.7,
-                    return_full_text: false
-                }
+                model: model,
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are a helpful assistant. Give concise, direct answers. Keep responses under 200 words unless the question requires more detail.'
+                    },
+                    {
+                        role: 'user',
+                        content: query
+                    }
+                ],
+                max_tokens: 500,
+                temperature: 0.7
             })
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            if (response.status === 503) {
-                throw new Error('Model is loading, please try again in a few seconds');
-            }
-            throw new Error(error.error || 'Hugging Face API error');
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.error?.message || `Groq API error (${response.status})`);
         }
 
         const data = await response.json();
-        
-        // Handle array response
-        if (Array.isArray(data)) {
-            return data[0].generated_text.trim();
-        }
-        
-        return data.generated_text?.trim() || 'No response generated';
+        return data.choices[0].message.content.trim();
     }
 
     async function callOpenAI(query, key) {

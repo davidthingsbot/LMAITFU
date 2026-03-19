@@ -20,7 +20,7 @@ The passive-aggressive way to tell someone: *"You know you could have just asked
 This is a static site that runs entirely in the browser. When viewing a shared link:
 
 1. Choose an AI provider:
-   - **🤗 Hugging Face (Free)** — No API key required! Uses Mistral-7B. Rate-limited but works.
+   - **⚡ Groq (Free)** — Free API key, takes 30 seconds to get. Super fast (Llama 3.1)
    - **OpenAI** — Requires your own API key
    - **Anthropic** — Requires your own API key
 
@@ -39,15 +39,14 @@ This is a static site that runs entirely in the browser. When viewing a shared l
 ### Creating a Link
 
 1. Visit the site
-2. Choose provider (Hugging Face is default, no key needed)
-3. Type the question
-4. Click "Generate Link"
-5. Share the link with the person who should have asked AI themselves
+2. Type the question
+3. Click "Generate Link"
+4. Share the link with the person who should have asked AI themselves
 
 ### Viewing a Link
 
 1. Open the shared link
-2. Choose "Hugging Face (Free)" or use your own API key
+2. Get a free Groq API key (30 seconds, no credit card) or use your own OpenAI/Anthropic key
 3. Watch the animation
 4. See the AI's answer
 5. Feel appropriately chastised
