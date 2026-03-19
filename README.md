@@ -17,18 +17,21 @@ The passive-aggressive way to tell someone: *"You know you could have just asked
 
 ## How It Works
 
-This is a static site that runs entirely in the browser. When generating a response:
+This is a static site that runs entirely in the browser. When viewing a shared link:
 
-- The site calls the OpenAI or Anthropic API directly from the client
-- **Users must provide their own API key** (stored locally in browser, never sent to any server)
-- The animation plays while the real API call happens
-- The actual AI response is displayed
+1. Choose an AI provider:
+   - **🤗 Hugging Face (Free)** — No API key required! Uses Mistral-7B. Rate-limited but works.
+   - **OpenAI** — Requires your own API key
+   - **Anthropic** — Requires your own API key
+
+2. Watch the animation play while the real API call happens
+3. See the actual AI response
 
 ### Why Client-Side?
 
 - No backend to maintain
-- No API costs for the site operator
-- User's key = user's cost
+- Free option via Hugging Face Inference API
+- Your key (if used) = your cost
 - Privacy: queries never touch a third-party server (except the AI provider)
 
 ## Usage
@@ -36,7 +39,7 @@ This is a static site that runs entirely in the browser. When generating a respo
 ### Creating a Link
 
 1. Visit the site
-2. Enter your API key (OpenAI or Anthropic) — saved locally
+2. Choose provider (Hugging Face is default, no key needed)
 3. Type the question
 4. Click "Generate Link"
 5. Share the link with the person who should have asked AI themselves
@@ -44,9 +47,10 @@ This is a static site that runs entirely in the browser. When generating a respo
 ### Viewing a Link
 
 1. Open the shared link
-2. Watch the animation
-3. See the AI's answer
-4. Feel appropriately chastised
+2. Choose "Hugging Face (Free)" or use your own API key
+3. Watch the animation
+4. See the AI's answer
+5. Feel appropriately chastised
 
 ## Technical Details
 

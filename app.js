@@ -1,16 +1,46 @@
 // LMAITFU - Let Me AI That For You
-// Client-side AI query animator
+// Client-side AI query animator with multiple backend support
 
 (function() {
     'use strict';
 
+    // Provider configurations
+    const PROVIDERS = {
+        huggingface: {
+            name: 'Hugging Face',
+            displayName: '🤗 Hugging Face',
+            requiresKey: false,
+            keyPrefix: 'hf_',
+            // Using Mistral-7B-Instruct via HF Inference API
+            model: 'mistralai/Mistral-7B-Instruct-v0.2'
+        },
+        openai: {
+            name: 'ChatGPT',
+            displayName: 'ChatGPT',
+            requiresKey: true,
+            keyPrefix: 'sk-',
+            model: 'gpt-4o-mini'
+        },
+        anthropic: {
+            name: 'Claude',
+            displayName: 'Claude',
+            requiresKey: true,
+            keyPrefix: 'sk-ant-',
+            model: 'claude-sonnet-4-20250514'
+        }
+    };
+
     // DOM Elements
     const setupMode = document.getElementById('setup-mode');
     const animationMode = document.getElementById('animation-mode');
-    const keyRequiredMode = document.getElementById('key-required-mode');
+    const providerSelectMode = document.getElementById('provider-select-mode');
+    const keyEntryMode = document.getElementById('key-entry-mode');
     
     const apiProvider = document.getElementById('api-provider');
     const apiKey = document.getElementById('api-key');
+    const apiKeyGroup = document.getElementById('api-key-group');
+    const keyOptional = document.getElementById('key-optional');
+    const keyHint = document.getElementById('key-hint');
     const questionInput = document.getElementById('question');
     const generateBtn = document.getElementById('generate-btn');
     const linkResult = document.getElementById('link-result');
@@ -19,54 +49,93 @@
     
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('send-btn');
     const snarkMessage = document.getElementById('snark-message');
+    
+    const useFreeBtn = document.getElementById('use-free-btn');
+    const useOwnKeyBtn = document.getElementById('use-own-key-btn');
     
     const viewerProvider = document.getElementById('viewer-provider');
     const viewerKey = document.getElementById('viewer-key');
     const viewerContinueBtn = document.getElementById('viewer-continue-btn');
+    const backToFreeBtn = document.getElementById('back-to-free-btn');
 
-    // Load saved API key
-    const savedProvider = localStorage.getItem('lmaitfu_provider');
+    // Load saved settings
+    const savedProvider = localStorage.getItem('lmaitfu_provider') || 'huggingface';
     const savedKey = localStorage.getItem('lmaitfu_key');
-    if (savedProvider) apiProvider.value = savedProvider;
+    apiProvider.value = savedProvider;
     if (savedKey) apiKey.value = savedKey;
+    updateKeyUI();
 
     // Check if we're in view mode (URL has query)
     const urlParams = new URLSearchParams(window.location.search);
     const encodedQuery = urlParams.get('q');
     
+    let currentQuery = '';
+
     if (encodedQuery) {
-        // View mode - play the animation
         startViewMode(encodedQuery);
     }
 
     // Event Listeners
+    apiProvider.addEventListener('change', () => {
+        localStorage.setItem('lmaitfu_provider', apiProvider.value);
+        updateKeyUI();
+    });
+    
+    apiKey.addEventListener('change', () => {
+        localStorage.setItem('lmaitfu_key', apiKey.value);
+    });
+
     generateBtn.addEventListener('click', generateLink);
     copyBtn.addEventListener('click', copyLink);
+    
+    useFreeBtn.addEventListener('click', () => {
+        hideAllModes();
+        playAnimation(currentQuery, 'huggingface', '');
+    });
+    
+    useOwnKeyBtn.addEventListener('click', () => {
+        hideAllModes();
+        keyEntryMode.classList.remove('hidden');
+    });
+    
+    backToFreeBtn.addEventListener('click', () => {
+        hideAllModes();
+        providerSelectMode.classList.remove('hidden');
+    });
+    
     viewerContinueBtn.addEventListener('click', () => {
         const key = viewerKey.value.trim();
         const provider = viewerProvider.value;
         if (key) {
             localStorage.setItem('lmaitfu_key', key);
             localStorage.setItem('lmaitfu_provider', provider);
-            keyRequiredMode.classList.add('hidden');
+            hideAllModes();
             playAnimation(currentQuery, provider, key);
+        } else {
+            alert('Please enter an API key');
         }
     });
 
-    // Save API key on change
-    apiKey.addEventListener('change', () => {
-        localStorage.setItem('lmaitfu_key', apiKey.value);
-    });
-    apiProvider.addEventListener('change', () => {
-        localStorage.setItem('lmaitfu_provider', apiProvider.value);
-    });
+    function updateKeyUI() {
+        const provider = PROVIDERS[apiProvider.value];
+        if (provider.requiresKey) {
+            keyOptional.style.display = 'none';
+            keyHint.textContent = 'Stored locally in your browser. Never sent anywhere except the AI provider.';
+        } else {
+            keyOptional.style.display = 'inline';
+            keyHint.textContent = 'Hugging Face works without a key (rate-limited). Add one for higher limits.';
+        }
+    }
 
-    let currentQuery = '';
+    function hideAllModes() {
+        setupMode.classList.add('hidden');
+        animationMode.classList.add('hidden');
+        providerSelectMode.classList.add('hidden');
+        keyEntryMode.classList.add('hidden');
+    }
 
     function generateLink() {
-        const key = apiKey.value.trim();
         const question = questionInput.value.trim();
         const provider = apiProvider.value;
         
@@ -75,12 +144,13 @@
             return;
         }
         
-        if (!key) {
-            alert('Please enter your API key!');
+        // For providers that require a key, check it
+        if (PROVIDERS[provider].requiresKey && !apiKey.value.trim()) {
+            alert('This provider requires an API key!');
             return;
         }
 
-        // Encode the question (not the key!)
+        // Encode the question
         const encoded = btoa(encodeURIComponent(question));
         const link = `${window.location.origin}${window.location.pathname}?q=${encoded}`;
         
@@ -98,7 +168,7 @@
     }
 
     function startViewMode(encodedQuery) {
-        setupMode.classList.add('hidden');
+        hideAllModes();
         
         try {
             currentQuery = decodeURIComponent(atob(encodedQuery));
@@ -106,25 +176,18 @@
             currentQuery = 'What is the meaning of life?';
         }
 
-        // Check if user has an API key saved
-        const savedKey = localStorage.getItem('lmaitfu_key');
-        const savedProvider = localStorage.getItem('lmaitfu_provider') || 'openai';
-        
-        if (savedKey) {
-            playAnimation(currentQuery, savedProvider, savedKey);
-        } else {
-            // Show key required screen
-            keyRequiredMode.classList.remove('hidden');
-        }
+        // Show provider selection
+        providerSelectMode.classList.remove('hidden');
     }
 
     async function playAnimation(query, provider, key) {
+        hideAllModes();
         animationMode.classList.remove('hidden');
-        keyRequiredMode.classList.add('hidden');
         
         // Update header based on provider
+        const providerConfig = PROVIDERS[provider];
         const providerName = document.querySelector('.provider-name');
-        providerName.textContent = provider === 'openai' ? 'ChatGPT' : 'Claude';
+        providerName.textContent = providerConfig.name;
 
         // Clear previous messages
         chatMessages.innerHTML = '';
@@ -166,7 +229,12 @@
             
         } catch (error) {
             typingDiv.remove();
-            addMessage(`Error: ${error.message}. Maybe try getting your own API key? 😏`, 'assistant');
+            addMessage(`Error: ${error.message}`, 'assistant');
+            
+            // Still show snark, but modified
+            await sleep(1000);
+            snarkMessage.querySelector('p').textContent = 'Well, that didn\'t work. But you get the idea. 😅';
+            snarkMessage.classList.remove('hidden');
         }
     }
 
@@ -186,16 +254,65 @@
         chatInput.textContent = '';
         for (let i = 0; i < text.length; i++) {
             chatInput.textContent += text[i];
-            await sleep(30 + Math.random() * 40); // Variable typing speed
+            await sleep(30 + Math.random() * 40);
         }
     }
 
     async function callAI(query, provider, key) {
-        if (provider === 'openai') {
-            return callOpenAI(query, key);
-        } else {
-            return callAnthropic(query, key);
+        switch (provider) {
+            case 'huggingface':
+                return callHuggingFace(query, key);
+            case 'openai':
+                return callOpenAI(query, key);
+            case 'anthropic':
+                return callAnthropic(query, key);
+            default:
+                throw new Error('Unknown provider');
         }
+    }
+
+    async function callHuggingFace(query, key) {
+        const model = PROVIDERS.huggingface.model;
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        // Add auth header if key provided
+        if (key) {
+            headers['Authorization'] = `Bearer ${key}`;
+        }
+
+        const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                inputs: `<s>[INST] You are a helpful assistant. Give concise, direct answers. Keep responses under 200 words unless the question requires more detail.
+
+${query} [/INST]`,
+                parameters: {
+                    max_new_tokens: 500,
+                    temperature: 0.7,
+                    return_full_text: false
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            if (response.status === 503) {
+                throw new Error('Model is loading, please try again in a few seconds');
+            }
+            throw new Error(error.error || 'Hugging Face API error');
+        }
+
+        const data = await response.json();
+        
+        // Handle array response
+        if (Array.isArray(data)) {
+            return data[0].generated_text.trim();
+        }
+        
+        return data.generated_text?.trim() || 'No response generated';
     }
 
     async function callOpenAI(query, key) {
@@ -206,7 +323,7 @@
                 'Authorization': `Bearer ${key}`
             },
             body: JSON.stringify({
-                model: 'gpt-4o-mini',
+                model: PROVIDERS.openai.model,
                 messages: [
                     {
                         role: 'system',
@@ -231,8 +348,6 @@
     }
 
     async function callAnthropic(query, key) {
-        // Note: Anthropic's API doesn't support browser CORS, so this would need a proxy
-        // For now, we'll show a helpful message
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -242,7 +357,7 @@
                 'anthropic-dangerous-direct-browser-access': 'true'
             },
             body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
+                model: PROVIDERS.anthropic.model,
                 max_tokens: 500,
                 messages: [
                     {

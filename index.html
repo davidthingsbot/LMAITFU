@@ -17,13 +17,16 @@
             <div class="api-key-section">
                 <label for="api-provider">AI Provider:</label>
                 <select id="api-provider">
+                    <option value="huggingface">🤗 Hugging Face (Free)</option>
                     <option value="openai">OpenAI (GPT-4)</option>
                     <option value="anthropic">Anthropic (Claude)</option>
                 </select>
                 
-                <label for="api-key">Your API Key:</label>
-                <input type="password" id="api-key" placeholder="sk-... or sk-ant-...">
-                <p class="hint">Stored locally in your browser. Never sent anywhere except the AI provider.</p>
+                <div id="api-key-group">
+                    <label for="api-key">API Key <span id="key-optional">(optional for HF)</span>:</label>
+                    <input type="password" id="api-key" placeholder="hf_... or sk-...">
+                    <p class="hint" id="key-hint">Hugging Face works without a key (rate-limited). Add one for higher limits.</p>
+                </div>
             </div>
             
             <div class="question-section">
@@ -65,10 +68,31 @@
             </div>
         </div>
 
-        <!-- API Key Required (for viewers without a key) -->
-        <div id="key-required-mode" class="mode hidden">
-            <h2>🔑 API Key Required</h2>
-            <p>To see the AI's response, you'll need to provide your own API key.</p>
+        <!-- Provider Selection (for viewers) -->
+        <div id="provider-select-mode" class="mode hidden">
+            <h2>🤖 Choose AI Provider</h2>
+            <p>Pick how you want to see the answer:</p>
+            
+            <div class="provider-options">
+                <button id="use-free-btn" class="provider-btn free">
+                    <span class="provider-icon">🤗</span>
+                    <span class="provider-label">Hugging Face</span>
+                    <span class="provider-desc">Free, no key needed</span>
+                </button>
+                
+                <button id="use-own-key-btn" class="provider-btn">
+                    <span class="provider-icon">🔑</span>
+                    <span class="provider-label">Use My Own Key</span>
+                    <span class="provider-desc">OpenAI or Anthropic</span>
+                </button>
+            </div>
+            
+            <p class="hint">Or just... ask AI yourself next time? 😏</p>
+        </div>
+
+        <!-- API Key Entry (for viewers who want to use their own) -->
+        <div id="key-entry-mode" class="mode hidden">
+            <h2>🔑 Enter Your API Key</h2>
             
             <div class="api-key-section">
                 <label for="viewer-provider">AI Provider:</label>
@@ -82,8 +106,7 @@
             </div>
             
             <button id="viewer-continue-btn" class="primary-btn">Show Me The Answer</button>
-            
-            <p class="hint">Or just... ask AI yourself next time? 😏</p>
+            <button id="back-to-free-btn" class="secondary-btn">← Back to free option</button>
         </div>
     </div>
 
